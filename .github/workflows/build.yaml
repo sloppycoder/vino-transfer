@@ -1,0 +1,91 @@
+on:
+  push:
+    branches:
+      - xxx
+
+  pull_request:
+    branches:
+      - xxx
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      build_type: ${{ steps.envs.outputs.build_type }}
+
+    steps:
+      - name: Setup ENVs for use later
+        id: envs
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+             echo "build_type=full" >> $GITHUB_OUTPUT
+           else
+             echo "build_type=verify" >> $GITHUB_OUTPUT
+           fi
+
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Build and test
+        run: |
+          ./gradlew --no-daemon :java-convention:spotlessApply :java-convention:test
+          ./gradlew --no-daemon spotlessApply test
+
+      - name: Copy JaCoCo Report for publishing
+        run: |
+          mkdir -p coverage-reports
+          if [ -d "vino-baselib/build/reports/jacoco/test/html" ]; then
+            cp -r vino-baselib/build/reports/jacoco/test/html coverage-reports/vino-baselib
+          fi
+
+          if [ -d "vino-demo-svc/build/reports/jacoco/test/html" ]; then
+            cp -r vino-demo-svc/build/reports/jacoco/test/html coverage-reports/vino-demo-svc
+          fi
+
+      # - name: Upload JaCoCo Report to GitHub Pages
+      #   if: steps.envs.outputs.build_type == 'full'
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./coverage-reports
+
+      - name: Publish artifacts
+        if: steps.envs.outputs.build_type == 'full'
+        run: |
+          ./gradlew publishAllPublicationsToGitHubRepository -x test
+          ./gradlew :java-convention:publishAllPublicationsToGitHubRepository -x :java-convention:test
+        env:
+          GITHUB_USER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cleanup:
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.build.outputs.build_type == 'full'
+    strategy:
+      matrix:
+        param:
+          - vino-base-pom
+          - vino-bom
+          - vino-baselib
+          - vino-svc-parent
+          - vino-convention
+    steps:
+      - id: clean-up
+        name: Clean up old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: ${{ github.repository_owner}}
+          package-name: net.vino9.vino.${{ matrix.param }}
+          package-type: maven
+          min-versions-to-keep: 10
+          token: ${{ secrets.GITHUB_TOKEN }}
