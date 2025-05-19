@@ -4,8 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TransferApplication {
+public class TransferAPIApplication {
     public static void main(String[] args) {
-        SpringApplication.run(TransferApplication.class, args);
+        System.setProperty("spring.cloud.function.definition", "submit;result");
+        SpringApplication.run(TransferAPIApplication.class, args);
     }
 }

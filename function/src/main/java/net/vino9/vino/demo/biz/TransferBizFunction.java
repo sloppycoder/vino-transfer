@@ -7,13 +7,14 @@ import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-
 import lombok.extern.slf4j.Slf4j;
 import net.vino9.vino.demo.biz.exception.ProcessFailedException;
 import net.vino9.vino.demo.biz.exception.ValidationException;
 import net.vino9.vino.demo.biz.model.Transfer;
 import net.vino9.vino.demo.biz.model.TransferRequest;
+import net.vino9.vino.demo.biz.service.EventPublisher;
 import net.vino9.vino.demo.biz.service.TransferStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,11 +23,15 @@ import org.springframework.context.annotation.Configuration;
 public class TransferBizFunction {
 
     private final TransferStore transferStore;
-
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private final EventPublisher publisher;
 
-    public TransferBizFunction(TransferStore store) {
+    @Value("${custom.delay:0}")
+    int delay;
+
+    public TransferBizFunction(TransferStore store, EventPublisher publisher) {
         this.transferStore = store;
+        this.publisher = publisher;
     }
 
     @Bean
@@ -41,6 +46,9 @@ public class TransferBizFunction {
                 String refId = UUID.randomUUID().toString().substring(24);
                 request.setRefId(refId);
                 transferStore.save(toTransfer(request, "VALIDATED"));
+                if (delay > 5) {
+                    publisher.publishEvent(refId);
+                }
                 log.info("Transfer {} submitted", refId);
                 return refId;
             } else {
@@ -54,6 +62,18 @@ public class TransferBizFunction {
         return refId -> {
             Transfer transfer = transferStore.find(refId);
             if (transfer == null) throw new ProcessFailedException("Transfer not found");
+
+            // some random delay
+            try {
+                var randomDelay = Math.random() * delay;
+                if (randomDelay > 0.1) {
+                    log.info("Processing transfer {} with delay {}", refId, randomDelay);
+                    Thread.sleep((long) randomDelay * 1000);
+                }
+            } catch (InterruptedException e) {
+                log.info("InterruptedException!");
+            }
+
             if (transfer.getAmount().equals(new BigDecimal("88"))) {
                 log.info("Transfer {} failed", refId);
                 transfer.setStatus("FAILED");
@@ -89,5 +109,10 @@ public class TransferBizFunction {
                 .fromAccountBalance(new BigDecimal("200.00"))
                 .toAccountBalance(new BigDecimal("400.00"))
                 .build();
+    }
+
+    private boolean isUnitTest() {
+        return System.getProperty("surefire.test.class.path") != null
+                || System.getProperty("junit.jupiter.testclass") != null;
     }
 }

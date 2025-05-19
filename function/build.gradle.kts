@@ -7,6 +7,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-function-web")
     implementation("org.springframework.cloud:spring-cloud-function-context")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.github.fppt:jedis-mock:${libs.versions.jedis.mock.get()}")
