@@ -7,12 +7,20 @@ import java.util.function.Function;
 import net.vino9.vino.demo.biz.exception.ValidationException;
 import net.vino9.vino.demo.biz.model.Transfer;
 import net.vino9.vino.demo.biz.model.TransferRequest;
+import net.vino9.vino.demo.biz.service.TransferStore;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 
-@SpringBootTest(classes = TransferBizFunction.class)
+@SpringBootTest(classes = {TestApplication.class})
 class TransferBizFuncTests {
-    TransferBizFunction functions = new TransferBizFunction();
+
+    @Autowired TransferBizFunction functions;
+
+    @Autowired private TransferStore store;
+
+    @Autowired private RedisTemplate<String, Transfer> tempalate;
 
     @Test
     void testValidateSuccess() {

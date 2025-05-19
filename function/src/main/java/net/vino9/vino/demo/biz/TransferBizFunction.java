@@ -4,8 +4,6 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -13,17 +11,21 @@ import net.vino9.vino.demo.biz.exception.ProcessFailedException;
 import net.vino9.vino.demo.biz.exception.ValidationException;
 import net.vino9.vino.demo.biz.model.Transfer;
 import net.vino9.vino.demo.biz.model.TransferRequest;
+import net.vino9.vino.demo.biz.service.TransferStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class TransferBizFunction {
 
-    private final Map<String, Transfer> transferStore = new HashMap<>();
+    private final TransferStore transferStore;
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    @Bean
+    public TransferBizFunction(TransferStore store) {
+        this.transferStore = store;
+    }
+
     public Function<TransferRequest, String> validate() {
         return request -> {
             Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
@@ -34,7 +36,7 @@ public class TransferBizFunction {
             if (!request.getFromAccount().equals("1111")) {
                 String refId = UUID.randomUUID().toString();
                 request.setRefId(refId);
-                transferStore.put(refId, toTransfer(request, "VALIDATED"));
+                transferStore.save(toTransfer(request, "VALIDATED"));
                 return refId;
             } else {
                 throw new ValidationException("Invalid account 1111");
@@ -45,10 +47,11 @@ public class TransferBizFunction {
     @Bean
     public Function<String, String> process() {
         return refId -> {
-            Transfer transfer = transferStore.get(refId);
+            Transfer transfer = transferStore.find(refId);
             if (transfer == null) throw new ProcessFailedException("Transfer not found");
             // Simulate processing
             transfer.setStatus("PROCESSED");
+            transferStore.save(transfer);
             return refId;
         };
     }
@@ -56,7 +59,7 @@ public class TransferBizFunction {
     @Bean
     public Function<String, Transfer> result() {
         return refId -> {
-            Transfer transfer = transferStore.get(refId);
+            Transfer transfer = transferStore.find(refId);
             if (transfer == null) throw new ProcessFailedException("Transfer not found");
             return transfer;
         };

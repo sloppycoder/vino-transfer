@@ -1,13 +1,8 @@
 spring:
   cloud:
     function:
-      definition: validate|process|result
+      definition: transfer_request
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
+  redis:
+    host: localhost
+    port: 6379
