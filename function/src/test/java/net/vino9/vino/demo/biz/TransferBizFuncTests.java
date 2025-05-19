@@ -7,23 +7,17 @@ import java.util.function.Function;
 import net.vino9.vino.demo.biz.exception.ValidationException;
 import net.vino9.vino.demo.biz.model.Transfer;
 import net.vino9.vino.demo.biz.model.TransferRequest;
-import net.vino9.vino.demo.biz.service.TransferStore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 
 @SpringBootTest(classes = {TestApplication.class})
 class TransferBizFuncTests {
 
     @Autowired TransferBizFunction functions;
 
-    @Autowired private TransferStore store;
-
-    @Autowired private RedisTemplate<String, Transfer> tempalate;
-
     @Test
-    void testValidateSuccess() {
+    void testSubmitSuccess() {
         TransferRequest request =
                 TransferRequest.builder()
                         .fromAccount("1234")
@@ -32,14 +26,14 @@ class TransferBizFuncTests {
                         .toAccount("4321")
                         .memo("test transfer")
                         .build();
-        Function<TransferRequest, String> validate = functions.validate();
+        Function<TransferRequest, String> validate = functions.submit();
         String refId = validate.apply(request);
 
         assertNotNull(refId);
     }
 
     @Test
-    void testValidateFailure() {
+    void testSubmitFailure() {
         TransferRequest request =
                 TransferRequest.builder()
                         .fromAccount("1111")
@@ -48,7 +42,7 @@ class TransferBizFuncTests {
                         .toAccount("4321")
                         .memo("test transfer")
                         .build();
-        assertThrows(ValidationException.class, () -> functions.validate().apply(request));
+        assertThrows(ValidationException.class, () -> functions.submit().apply(request));
     }
 
     @Test
@@ -61,7 +55,7 @@ class TransferBizFuncTests {
                         .toAccount("4321")
                         .memo("test transfer")
                         .build();
-        String refId = functions.validate().apply(request);
+        String refId = functions.submit().apply(request);
         String processedRefId = functions.process().apply(refId);
         Transfer transfer = functions.result().apply(processedRefId);
 

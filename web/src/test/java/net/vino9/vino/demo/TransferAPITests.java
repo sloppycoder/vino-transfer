@@ -16,10 +16,9 @@ import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(JedisMockConfig.class)
-class TransferRestTests {
+class TransferAPITests {
 
     @Autowired TestRestTemplate restTemplate;
-
     @Autowired ObjectMapper objectMapper;
 
     @Test
@@ -34,7 +33,7 @@ class TransferRestTests {
                         .build();
 
         ResponseEntity<Transfer> response =
-                restTemplate.postForEntity("/transfer_request", request, Transfer.class);
+                restTemplate.postForEntity("/submit,process,result", request, Transfer.class);
 
         Assertions.assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody().getRefId());

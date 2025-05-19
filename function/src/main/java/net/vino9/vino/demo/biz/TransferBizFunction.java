@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+
+import lombok.extern.slf4j.Slf4j;
 import net.vino9.vino.demo.biz.exception.ProcessFailedException;
 import net.vino9.vino.demo.biz.exception.ValidationException;
 import net.vino9.vino.demo.biz.model.Transfer;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Slf4j
 public class TransferBizFunction {
 
     private final TransferStore transferStore;
@@ -26,7 +29,8 @@ public class TransferBizFunction {
         this.transferStore = store;
     }
 
-    public Function<TransferRequest, String> validate() {
+    @Bean
+    public Function<TransferRequest, String> submit() {
         return request -> {
             Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
             if (!violations.isEmpty()) {
@@ -34,9 +38,10 @@ public class TransferBizFunction {
             }
 
             if (!request.getFromAccount().equals("1111")) {
-                String refId = UUID.randomUUID().toString();
+                String refId = UUID.randomUUID().toString().substring(24);
                 request.setRefId(refId);
                 transferStore.save(toTransfer(request, "VALIDATED"));
+                log.info("Transfer {} submitted", refId);
                 return refId;
             } else {
                 throw new ValidationException("Invalid account 1111");
@@ -49,9 +54,15 @@ public class TransferBizFunction {
         return refId -> {
             Transfer transfer = transferStore.find(refId);
             if (transfer == null) throw new ProcessFailedException("Transfer not found");
-            // Simulate processing
-            transfer.setStatus("PROCESSED");
+            if (transfer.getAmount().equals(new BigDecimal("88"))) {
+                log.info("Transfer {} failed", refId);
+                transfer.setStatus("FAILED");
+            } else {
+                log.info("Transfer {} success", refId);
+                transfer.setStatus("PROCESSED");
+            }
             transferStore.save(transfer);
+
             return refId;
         };
     }
@@ -61,16 +72,8 @@ public class TransferBizFunction {
         return refId -> {
             Transfer transfer = transferStore.find(refId);
             if (transfer == null) throw new ProcessFailedException("Transfer not found");
+            log.info("Transfer {} result: {}", refId, transfer.getStatus());
             return transfer;
-        };
-    }
-
-    @Bean
-    public Function<TransferRequest, Transfer> transfer_request() {
-        return request -> {
-            String ref = validate().apply(request);
-            ref = process().apply(ref);
-            return result().apply(ref);
         };
     }
 
