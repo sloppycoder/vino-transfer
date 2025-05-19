@@ -57,6 +57,18 @@ subprojects {
             }
         }
 
+        apply(plugin = "io.spring.dependency-management")
+        extensions.configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
+            imports {
+                mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.5")
+                mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+            }
+        }
+
+        configurations.named("compileOnly") {
+            extendsFrom(configurations.getByName("annotationProcessor"))
+        }
+
         apply(plugin = "jacoco")
     }
 
@@ -75,5 +87,13 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
         finalizedBy("jacocoTestReport")
+    }
+
+    tasks.withType<Test>().configureEach {
+        testLogging {
+            events("passed", "failed", "skipped")
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showStandardStreams = false
+        }
     }
 }
