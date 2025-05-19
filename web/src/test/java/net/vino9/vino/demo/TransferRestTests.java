@@ -9,17 +9,15 @@ import net.vino9.vino.demo.biz.model.TransferRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+@Import(JedisMockConfig.class)
 class TransferRestTests {
 
-    @Autowired MockMvc mockMvc;
     @Autowired TestRestTemplate restTemplate;
 
     @Autowired ObjectMapper objectMapper;
