@@ -1,0 +1,21 @@
+[versions]
+java = "17"
+jacoco-tool = "0.8.13"
+
+# spring related
+dependency-management = "1.1.7"
+spring-boot = "3.4.5"
+spring-cloud = "2024.0.1"
+
+# spotless formatting
+spotless-plugin = "7.0.3"
+google-java-format = "1.17.0"
+ktlint = "1.5.0"
+
+# tools
+jedis-mock = "1.1.11"
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+dependency-management = { id = "io.spring.dependency-management", version.ref = "dependency-management" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless-plugin" }

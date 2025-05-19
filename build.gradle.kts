@@ -1,8 +1,13 @@
+val googleJavaFormatVersion = libs.versions.google.java.format.get()
+val ktlintVersion: String = libs.versions.ktlint.get()
+val javaVersion: String = libs.versions.java.get()
+val jacocoToolVersion = libs.versions.jacoco.tool.get()
+
 plugins {
     id("java-platform")
-    id("com.diffplug.spotless") version "7.0.3"
-    id("io.spring.dependency-management") version "1.1.7" apply (false)
-    id("org.springframework.boot") version "3.4.5" apply (false)
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.dependency.management) apply (false)
+    alias(libs.plugins.spring.boot) apply (false)
 }
 
 allprojects {
@@ -17,7 +22,7 @@ allprojects {
                 target("src/main/java/**/*.java", "src/test/java/**/*.java")
                 importOrder()
                 removeUnusedImports()
-                googleJavaFormat("1.17.0").aosp().reflowLongStrings()
+                googleJavaFormat(googleJavaFormatVersion).aosp().reflowLongStrings()
                 formatAnnotations()
                 trimTrailingWhitespace()
                 endWithNewline()
@@ -25,7 +30,7 @@ allprojects {
 
             kotlinGradle {
                 target("*.gradle.kts")
-                ktlint("1.5.0").editorConfigOverride(mapOf("indent_size" to "4"))
+                ktlint(ktlintVersion).editorConfigOverride(mapOf("indent_size" to "4"))
                 trimTrailingWhitespace()
                 endWithNewline()
             }
@@ -47,21 +52,21 @@ subprojects {
     plugins.withType<JavaPlugin> {
 
         tasks.withType<JavaCompile>().configureEach {
-            sourceCompatibility = "21"
-            targetCompatibility = "21"
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
         }
 
         extensions.configure<JavaPluginExtension> {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of("21"))
+                languageVersion.set(JavaLanguageVersion.of(javaVersion))
             }
         }
 
         apply(plugin = "io.spring.dependency-management")
         extensions.configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
             imports {
-                mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.5")
-                mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+                mavenBom("org.springframework.boot:spring-boot-dependencies:${libs.versions.spring.boot.get()}")
+                mavenBom("org.springframework.cloud:spring-cloud-dependencies:${libs.versions.spring.cloud.get()}")
             }
         }
 
@@ -74,7 +79,7 @@ subprojects {
 
     plugins.withId("jacoco") {
         extensions.configure<JacocoPluginExtension> {
-            toolVersion = "0.8.13"
+            toolVersion = jacocoToolVersion
         }
 
         tasks.named<JacocoReport>("jacocoTestReport") {
