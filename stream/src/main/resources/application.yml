@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  name: transfer-processor
+  redis:
+    host: localhost
+    port: 6379
+    stream:
+      bindings:
+        process-in-0:
+          content-type: text/plain
+        process-out-0:
+          content-type: text/plain
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: mappings,functions
+
+logging:
+  level:
+    org.springframework.cloud.stream: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"

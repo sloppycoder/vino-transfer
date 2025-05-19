@@ -1,6 +1,8 @@
 rootProject.name = "vino-transfer"
 include(
     ":function",
+    ":web",
+    ":stream",
 )
 
 dependencyResolutionManagement {
