@@ -45,15 +45,22 @@ public class TransferBizFunction {
             if (!request.getFromAccount().equals("1111")) {
                 String refId = UUID.randomUUID().toString().substring(24);
                 request.setRefId(refId);
-                transferStore.save(toTransfer(request, "VALIDATED"));
-                if (delay > 5) {
-                    publisher.publishEvent(refId);
-                }
+                transferStore.save(toTransfer(request, "SUBMITTED"));
                 log.info("Transfer {} submitted", refId);
                 return refId;
             } else {
                 throw new ValidationException("Invalid account 1111");
             }
+        };
+    }
+
+
+    @Bean
+    public Function<String, String> queue() {
+        return refId -> {
+            publisher.publishEvent(refId);
+            log.info("Transfer {} queued", refId);
+            return refId;
         };
     }
 
@@ -109,10 +116,5 @@ public class TransferBizFunction {
                 .fromAccountBalance(new BigDecimal("200.00"))
                 .toAccountBalance(new BigDecimal("400.00"))
                 .build();
-    }
-
-    private boolean isUnitTest() {
-        return System.getProperty("surefire.test.class.path") != null
-                || System.getProperty("junit.jupiter.testclass") != null;
     }
 }
