@@ -1,7 +1,7 @@
 rootProject.name = "vino-transfer"
 include(
     ":function",
-    ":web",
+    ":api",
     ":stream",
 )
 
