@@ -11,7 +11,7 @@ This project is demostrate how to write business logic using [Spring Cloud Funct
 
 ## Quick start
 
-Install rabbmitmq and redis first. If using homebrew, it's as easy as 
+Install rabbmitmq and redis first. If using homebrew, it's as easy as
 
 ```shell
 brew install rabbitmq
@@ -29,23 +29,23 @@ Then start the api and stream processor:
 Send request for sync processing
 ```shell
 
-curl -X POST http://localhost:8080/submit,process,result -H "Content-Type: application/json" -d @scripts/transfer.json 
+curl -X POST http://localhost:8080/submit,process,result -H "Content-Type: application/json" -d @scripts/transfer.json
 
-# the log of api should show the request is processed with some amount of 
+# the log of api should show the request is processed with some amount of
 # random delay. the stream log should not show anything.
 # output should be a transfer json with status PROCESSED
 ```
 
 Send request for async processing
 ```shell
-curl -X POST http://localhost:8080/submit,queue -H "Content-Type: application/json" -d @scripts/transfer.json 
+curl -X POST http://localhost:8080/submit,queue -H "Content-Type: application/json" -d @scripts/transfer.json
 
-# output should be a refId. 
-# the log of api should show the request is submitted. the stream log will show 
+# output should be a refId.
+# the log of api should show the request is submitted. the stream log will show
 # the request being processed with random delay.
 # after processing is complete
 
-curl http://localhost:8080/result/refId 
+curl http://localhost:8080/result/refId
 
 # should return trasnfer json with status PROCESSED
 ```
