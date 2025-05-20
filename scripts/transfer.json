@@ -1,0 +1,7 @@
+{
+    "fromAccount": "A",
+    "toAccount": "B",
+    "amount": "100",
+    "currency": "USD",
+    "memo": "test"
+  }
