@@ -6,11 +6,16 @@ spring:
   redis:
     host: localhost
     port: 6379
+  cloud:
+    function:
+      definition: process
     stream:
       bindings:
         process-in-0:
+          destination: process-in
           content-type: text/plain
         process-out-0:
+          destination: process-out
           content-type: text/plain
 
 management:
