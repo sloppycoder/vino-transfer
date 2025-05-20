@@ -10,8 +10,7 @@ public class EventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
-    // @Value("${custom.transfer.topic:process-in-0}")
-    private String topic = "process-in-0";
+    private String topic = "process-in";
 
     public EventPublisher(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;

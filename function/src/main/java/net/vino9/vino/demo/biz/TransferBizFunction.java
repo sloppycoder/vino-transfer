@@ -26,7 +26,7 @@ public class TransferBizFunction {
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     private final EventPublisher publisher;
 
-    @Value("${custom.delay:0}")
+    @Value("${custom.delay:10}")
     int delay;
 
     public TransferBizFunction(TransferStore store, EventPublisher publisher) {
@@ -54,7 +54,6 @@ public class TransferBizFunction {
         };
     }
 
-
     @Bean
     public Function<String, String> queue() {
         return refId -> {
@@ -74,7 +73,10 @@ public class TransferBizFunction {
             try {
                 var randomDelay = Math.random() * delay;
                 if (randomDelay > 0.1) {
-                    log.info("Processing transfer {} with delay {}", refId, randomDelay);
+                    log.info(
+                            "Processing transfer {} with delay {}s",
+                            refId,
+                            String.format("%.2f", randomDelay));
                     Thread.sleep((long) randomDelay * 1000);
                 }
             } catch (InterruptedException e) {
