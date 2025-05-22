@@ -92,9 +92,6 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
         finalizedBy("jacocoTestReport")
-    }
-
-    tasks.withType<Test>().configureEach {
         testLogging {
             events("passed", "failed", "skipped")
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
